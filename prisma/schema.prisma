@@ -9,11 +9,49 @@ datasource db {
 }
 
 model Profile {
-    id String @id @default(uuid())
-
+    id       String @id @default(uuid())
+    userId   String @unique
     email    String @db.Text
     name     String
     imageUrl String @db.Text
+
+    servers   Server[]
+    members   Member[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Server {
+    id         String @id @default(uuid())
+    name       String
+    inviteCode String @db.Text
+
+    members Member[]
+
+    profile   Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([profileId])
+}
+
+enum MemberRole {
+    ADMIN
+    MODERATOR
+    GUEST
+}
+
+model Member {
+    id   String     @id @default(uuid())
+    role MemberRole
+
+    server   Server? @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    serverId String?
+
+    profile   Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
