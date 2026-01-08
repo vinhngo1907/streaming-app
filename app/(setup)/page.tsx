@@ -1,3 +1,4 @@
+import { InitialModal } from "@/components/modals/initial-modal";
 import { db } from "@/lib/db";
 import { initialProfile } from "@/lib/initial-profile";
 import { redirect } from "next/navigation";
@@ -12,9 +13,5 @@ export default async function SetupPage() {
     });
 
     if (server) return redirect(`/servers/${server.id}`);
-    return (
-        <div className="h-full flex flex-col space-y-4 items-center justify-content text-muted-foreground">
-            Setup Page
-        </div>
-    )
+    return <InitialModal />
 }

@@ -1,55 +1,56 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
-import * as z from "zod";
-import axios from "axios";
+import React from "react";
+import { useModal } from "@/hooks/use-modal-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { useForm } from "react-hook-form"
+import * as z from "zod";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } from "../ui/dialog";
+import axios from "axios";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { FileUpload } from "../file-upload";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 const formSchema = z.object({
-    name: z.string().min(1, { message: "Server name is required" }),
-    imageUrl: z.string().min(1, { message: "Server image is required" })
+    name: z.string().min(1, { message: "Server name is required." }),
+    imageUrl: z.string().min(1, { message: "Server image is required." })
 });
 
-export function InitialModal() {
+export function CreateServerModal() {
+    const { isOpen, onClose, type } = useModal();
     const router = useRouter();
-    const [isMounted, setIsMounted] = useState(false);
+    const isModalOpen = isOpen && type === "createServer";
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            imageUrl: ""
+
         }
     });
     const isLoading = form.formState.isSubmitting;
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const handleSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/servers", values)
+            await axios.post("/api/servers", values);
             form.reset();
-            router.refresh();
-            window.location.reload();
+            onClose();
         } catch (error) {
             console.error(error);
         }
     }
-
-    useEffect(() => {
-        setIsMounted(true)
-    }, []);
-
-    if (!isMounted) return null;
+    const handelClose = () => {
+        form.reset();
+        onClose();
+    }
 
     return (
-        <Dialog open>
+        <Dialog open={isModalOpen} onOpenChange={handelClose}>
             <DialogContent className="bg-white text-black p-0 overflow-hidden">
                 <DialogHeader className="pt-8 px-6">
-                    <DialogTitle className="text-2xl text-center font-bold">
+                    <DialogTitle className="pt-8 px-6">
                         Customize your server
                     </DialogTitle>
                     <DialogDescription className="text-center text-zinc-500">
@@ -58,7 +59,7 @@ export function InitialModal() {
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                         <div className="space-y-8 px-6">
                             <div className="flex items-center justify-center text-center">
                                 <FormField
@@ -69,8 +70,8 @@ export function InitialModal() {
                                             <FormControl>
                                                 <FileUpload
                                                     endpoint="serverImage"
-                                                    value={field.value}
                                                     onChange={field.onChange}
+                                                    value={field.value}
                                                 />
                                             </FormControl>
                                         </FormItem>
@@ -86,11 +87,11 @@ export function InitialModal() {
                                             Server Name
                                         </FormLabel>
                                         <FormControl>
-                                            <Input
-                                                disabled={isLoading}
-                                                placeholder="Enter server name"
-                                                className="bg-zinc-300/50 border-0 focus-visible: ring-0 text-black focus-visible:ring-offset-0"
-                                                {...field}
+                                            <Input 
+                                            placeholder="Enter server name"
+                                            disabled={isLoading}
+                                        className="bg-zinc-300/50 border-0 focus-visible: ring-0 text-black focus-visible:ring-offset-0"
+                                            {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -107,5 +108,5 @@ export function InitialModal() {
                 </Form>
             </DialogContent>
         </Dialog>
-    );
+    )
 }

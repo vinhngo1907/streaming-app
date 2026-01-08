@@ -17,19 +17,22 @@ model Profile {
 
     servers   Server[]
     members   Member[]
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    channels  Channel[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 }
 
 model Server {
     id         String @id @default(uuid())
     name       String
     inviteCode String @db.Text
+    imageUrl   String @db.Text
 
-    members Member[]
+    members  Member[]
+    channels Channel[]
 
-    profile   Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-    profileId String?
+    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -47,12 +50,35 @@ model Member {
     id   String     @id @default(uuid())
     role MemberRole
 
-    server   Server? @relation(fields: [serverId], references: [id], onDelete: Cascade)
-    serverId String?
+    server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    serverId String
 
-    profile   Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-    profileId String?
+    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+enum ChannelType {
+    TEXT
+    AUDIO
+    VIDEO
+}
+
+model Channel {
+    id        String      @id @default(uuid())
+    name      String      @db.Text
+    type      ChannelType @default(TEXT)
+    
+    profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String
+    server    Server      @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    serverId  String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([profileId])
+    @@index([serverId])
 }

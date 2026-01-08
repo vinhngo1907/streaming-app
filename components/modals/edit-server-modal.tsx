@@ -1,52 +1,46 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
-import * as z from "zod";
-import axios from "axios";
+import React from "react";
+import { useModal } from "@/hooks/use-modal-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useRouter } from "next/navigation";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { FileUpload } from "../file-upload";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { FileUpload } from "../file-upload";
 
 const formSchema = z.object({
-    name: z.string().min(1, { message: "Server name is required" }),
-    imageUrl: z.string().min(1, { message: "Server image is required" })
+    name: z.string().min(1, { message: "Server name is required." }),
+    imageUrl: z.string().min(1, { message: "Server image is required." })
 });
 
-export function InitialModal() {
+export function EditServerModal() {
+    const { isOpen, onClose, type } = useModal();
+    const isModalOpen = isOpen && type === "editServer";
     const router = useRouter();
-    const [isMounted, setIsMounted] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            imageUrl: ""
+            name: "", imageUrl: ""
         }
     });
-    const isLoading = form.formState.isSubmitting;
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/servers", values)
-            form.reset();
             router.refresh();
-            window.location.reload();
+            onClose();
         } catch (error) {
             console.error(error);
         }
     }
-
-    useEffect(() => {
-        setIsMounted(true)
-    }, []);
-
-    if (!isMounted) return null;
-
+    const handleClose = () => {
+        onClose()
+    }
+    const isLoading = form.formState.isSubmitting;
     return (
-        <Dialog open>
+        <Dialog open={isModalOpen} onOpenChange={handleClose}>
             <DialogContent className="bg-white text-black p-0 overflow-hidden">
                 <DialogHeader className="pt-8 px-6">
                     <DialogTitle className="text-2xl text-center font-bold">
@@ -100,12 +94,12 @@ export function InitialModal() {
                         </div>
                         <DialogFooter className="bg-gray-100 px-6 py-4">
                             <Button disabled={isLoading} variant="primary">
-                                Create
+                                Save
                             </Button>
                         </DialogFooter>
                     </form>
                 </Form>
             </DialogContent>
         </Dialog>
-    );
+    )
 }

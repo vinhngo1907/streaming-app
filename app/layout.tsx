@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import { SocketProvider } from "@/components/providers/socket-provider";
+import { ModalProvider } from "@/components/providers/modal-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
 
@@ -32,10 +35,10 @@ export default function RootLayout({
 						storageKey="discord-clone-theme"
 					>
 						{children}
-						{/* <SocketProvider>
-              <ModalProvider />
-              <QueryProvider>{children}</QueryProvider>
-            </SocketProvider> */}
+						<SocketProvider>
+							<ModalProvider />
+							<QueryProvider>{children}</QueryProvider>
+						</SocketProvider>
 					</ThemeProvider>
 				</body>
 			</html>
